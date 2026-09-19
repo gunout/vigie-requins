@@ -96,6 +96,7 @@ main { padding: 1.5rem 0 3rem; }
 .fr-tag--leger { background: var(--green-light); color: var(--green); font-weight: 700; }
 .fr-tag--prot { background: #FFE9FF; color: #B300B3; font-weight: 700; }
 .fr-tag--tech { background: #E6F3FF; color: #0066CC; font-weight: 700; }
+.fr-tag--zone { background: #FFF3CD; color: #8B5A00; font-weight: 700; }
 .fr-search { display: flex; align-items: center; gap: 0.5rem; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem 0.75rem; font-size: 0.85rem; }
 .fr-search input { border: none; outline: none; font-family: inherit; font-size: 0.85rem; width: 180px; background: transparent; color: var(--text); }
 .fr-search i { color: var(--text-mention); }
@@ -108,7 +109,7 @@ main { padding: 1.5rem 0 3rem; }
 .fr-modal__title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); }
 .fr-modal__close { background: none; border: none; font-size: 1.4rem; color: var(--text-mention); cursor: pointer; line-height: 1; }
 .fr-modal__body { padding: 1.25rem; }
-.map-legend { background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.75rem; line-height: 1.6; border: 1px solid var(--border); max-width: 240px; }
+.map-legend { background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.75rem; line-height: 1.6; border: 1px solid var(--border); max-width: 250px; }
 .map-legend__title { font-weight: 700; margin-bottom: 6px; color: var(--ocean); font-size: 0.8rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
 .map-legend__item { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
 .map-legend__dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
@@ -171,6 +172,7 @@ main { padding: 1.5rem 0 3rem; }
             <li><button class="fr-nav__link" data-tab="attacks">Attaques</button></li>
             <li><button class="fr-nav__link" data-tab="catches">Pêche préventive</button></li>
             <li><button class="fr-nav__link" data-tab="tech">Technologies</button></li>
+            <li><button class="fr-nav__link" data-tab="zones">Zonage</button></li>
             <li><button class="fr-nav__link" data-tab="transparency">Transparence</button></li>
         </ul>
     </div>
@@ -205,12 +207,12 @@ main { padding: 1.5rem 0 3rem; }
         <div class="fr-kpi fr-kpi--danger">
             <div class="fr-kpi__label"><i class="fas fa-triangle-exclamation"></i> Attaques (1980–2022)</div>
             <div class="fr-kpi__value" id="kpiAttacks">—</div>
-            <span class="fr-kpi__trend">48 recensées par le CSR</span>
+            <span class="fr-kpi__trend">62 accidents non provoqués</span>
         </div>
         <div class="fr-kpi fr-kpi--danger">
             <div class="fr-kpi__label"><i class="fas fa-skull"></i> Taux de mortalité</div>
             <div class="fr-kpi__value" id="kpiFatal">—</div>
-            <span class="fr-kpi__trend">25 morts (1980–2021)</span>
+            <span class="fr-kpi__trend">46 % (25 morts)</span>
         </div>
         <div class="fr-kpi fr-kpi--warning">
             <div class="fr-kpi__label"><i class="fas fa-water"></i> Zone la plus touchée</div>
@@ -218,9 +220,9 @@ main { padding: 1.5rem 0 3rem; }
             <span class="fr-kpi__trend">78 % des attaques</span>
         </div>
         <div class="fr-kpi fr-kpi--success">
-            <div class="fr-kpi__label"><i class="fas fa-fish"></i> Captures ciblées (2022–2026)</div>
+            <div class="fr-kpi__label"><i class="fas fa-fish"></i> Captures ciblées (2014–2023)</div>
             <div class="fr-kpi__value" id="kpiCatches">—</div>
-            <span class="fr-kpi__trend">329 tigres + 20 bouledogues</span>
+            <span class="fr-kpi__trend">413 tigres + 135 bouledogues</span>
         </div>
     </div>
 
@@ -228,7 +230,7 @@ main { padding: 1.5rem 0 3rem; }
         <div class="fr-kpi fr-kpi--success">
             <div class="fr-kpi__label"><i class="fas fa-clock-rotate-left"></i> Années sans attaque</div>
             <div class="fr-kpi__value" id="kpiZero">—</div>
-            <span class="fr-kpi__trend">Depuis 2019</span>
+            <span class="fr-kpi__trend">Depuis mai 2019</span>
         </div>
         <div class="fr-kpi">
             <div class="fr-kpi__label"><i class="fas fa-hourglass-half"></i> Heures de pêche</div>
@@ -236,14 +238,14 @@ main { padding: 1.5rem 0 3rem; }
             <span class="fr-kpi__trend">86 000+ h (2022–2026)</span>
         </div>
         <div class="fr-kpi fr-kpi--warning">
-            <div class="fr-kpi__label"><i class="fas fa-percent"></i> Taux capture ciblée</div>
-            <div class="fr-kpi__value" id="kpiTargetRate">—</div>
-            <span class="fr-kpi__trend">Critiqué (32 %)</span>
+            <div class="fr-kpi__label"><i class="fas fa-percent"></i> Taux survie accessoires</div>
+            <div class="fr-kpi__value" id="kpiSurvival">—</div>
+            <span class="fr-kpi__trend">90,2 % (2022–2026)</span>
         </div>
         <div class="fr-kpi fr-kpi--success">
-            <div class="fr-kpi__label"><i class="fas fa-heart-pulse"></i> Survie captures</div>
-            <div class="fr-kpi__value" id="kpiSurvival">—</div>
-            <span class="fr-kpi__trend">Espèces non ciblées</span>
+            <div class="fr-kpi__label"><i class="fas fa-shield-halved"></i> ZONEX actives</div>
+            <div class="fr-kpi__value" id="kpiZonex">—</div>
+            <span class="fr-kpi__trend">Zones d'expérimentation</span>
         </div>
     </div>
 
@@ -265,7 +267,7 @@ main { padding: 1.5rem 0 3rem; }
                 <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('heat')" id="btnHeat" style="opacity:1;"><i class="fas fa-fire"></i> Chaleur</button>
                 <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('equip')" id="btnEquip" style="opacity:1;"><i class="fas fa-tower-broadcast"></i> Équipements</button>
                 <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('spots')" id="btnSpots" style="opacity:1;"><i class="fas fa-water"></i> Spots</button>
-                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('zonage')" id="btnZonage" style="opacity:0.5;"><i class="fas fa-draw-polygon"></i> Zonage</button>
+                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('zonage')" id="btnZonage" style="opacity:1;"><i class="fas fa-draw-polygon"></i> ZONEX</button>
             </div>
         </div>
         <div class="fr-card__body" style="padding:0;">
@@ -328,7 +330,7 @@ main { padding: 1.5rem 0 3rem; }
             <div class="fr-card__body"><div class="fr-chart-wrap"><canvas id="hourChart"></canvas></div></div>
         </div>
         <div class="fr-card">
-            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-chart-line"></i> Captures (2022–2026)</div></div>
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-chart-line"></i> Captures annuelles</div></div>
             <div class="fr-card__body"><div class="fr-chart-wrap"><canvas id="catchChart"></canvas></div></div>
         </div>
         <div class="fr-card">
@@ -383,7 +385,7 @@ main { padding: 1.5rem 0 3rem; }
                         <tr>
                             <th>Espèce</th>
                             <th>Statut</th>
-                            <th>Nombre (2014–2023)</th>
+                            <th>Nombre</th>
                             <th>Détails</th>
                         </tr>
                     </thead>
@@ -394,8 +396,8 @@ main { padding: 1.5rem 0 3rem; }
             </div>
         </div>
         <div class="fr-card__footer">
-            <span>548 captures ciblées + 63 non ciblées</span>
-            <span>Source : Programme Réunionnais de Pêche de Prévention (PR2P)</span>
+            <span>548 captures ciblées + 751 accessoires</span>
+            <span>Source : Centre Sécurité Requin / IUCN 2024</span>
         </div>
     </div>
 
@@ -461,6 +463,58 @@ main { padding: 1.5rem 0 3rem; }
         </div>
     </div>
 
+    <h2 class="fr-section-title" id="zonesAnchor"><i class="fas fa-draw-polygon"></i> Zonage réglementaire et ZONEX</h2>
+    <div class="fr-grid-2">
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-shield"></i> Zones aménagées et filets anti-requins</div></div>
+            <div class="fr-card__body">
+                <p style="font-size:0.85rem;">Trois spots de baignade sont équipés de filets d'exclusion anti-requins, inspectés deux fois par jour par des scaphandriers professionnels :</p>
+                <ul style="font-size:0.8rem;margin-left:1.2rem;margin-top:0.5rem;">
+                    <li><strong>Boucan Canot</strong> (Saint-Paul) — mis en service le 11 décembre 2015</li>
+                    <li><strong>Roches Noires</strong> (Saint-Paul) — mis en service le 5 février 2016</li>
+                    <li><strong>Étang-Salé</strong> — équipé ultérieurement</li>
+                </ul>
+                <p style="font-size:0.8rem;margin-top:0.5rem;">La baignade est également possible dans les lagons de Saint-Paul (Hermitage, La Saline), Saint-Leu et Saint-Pierre.</p>
+            </div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-flask"></i> ZONEX (Zones d'Expérimentation)</div></div>
+            <div class="fr-card__body">
+                <p style="font-size:0.85rem;">Les ZONEX sont des zones d'expérimentation offrant une pratique sécurisée des activités nautiques, encadrées par la Brigade de Sécurité des Activités Nautiques (BSAN) de l'association RESSAC.</p>
+                <ul style="font-size:0.8rem;margin-left:1.2rem;margin-top:0.5rem;">
+                    <li>Signalétique spécifique (flammes vert/orange/rouge)</li>
+                    <li>Surveillance par MNS et agents CISAN</li>
+                    <li>Équipements de réduction du risque requis</li>
+                    <li>Protocole d'alerte et de secours formalisé</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="fr-card" style="margin-bottom:1rem;">
+        <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-list"></i> Détail des ZONEX et zones réglementées</div></div>
+        <div class="fr-card__body" style="padding:0;">
+            <div class="fr-table-wrap">
+                <table class="fr-table">
+                    <thead>
+                        <tr>
+                            <th>Zone</th>
+                            <th>Type</th>
+                            <th>Activités</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody id="zonesBody">
+                        <tr><td colspan="4" style="text-align:center;padding:1.5rem;">Chargement…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="fr-card__footer">
+            <span>Source : Arrêté préfectoral du 8 février 2017 / CSR</span>
+        </div>
+    </div>
+
     <h2 class="fr-section-title" id="transparencyAnchor"><i class="fas fa-scale-balanced"></i> Panneau transparence — controverses et limites</h2>
 
     <div class="transparency-panel">
@@ -471,7 +525,8 @@ main { padding: 1.5rem 0 3rem; }
             <li><strong>Espèces protégées capturées accidentellement</strong> : requins-marteaux (UICN en danger critique), requins cuivres (vulnérables), tortues marines.</li>
             <li><strong>Controverse sur la publication des données</strong> : en 2026, des organisations environnementales ont saisi le tribunal administratif pour non-publication des rapports mensuels du CSR.</li>
             <li><strong>Débat scientifique sur l'efficacité</strong> : la pêche préventive est contestée par certains chercheurs qui estiment qu'elle ne réduit pas significativement le risque d'attaque.</li>
-            <li><strong>Efficacité des PAVAC contestée</strong> : les données acoustiques montrent que les requins bouledogues passent <em>moins</em> de temps dans les eaux côtières quand les PAVAC sont déployées. Aucun requin marqué n'a été capturé sur une PAVAC [citation:9].</li>
+            <li><strong>Efficacité des PAVAC contestée</strong> : les données acoustiques montrent que les requins bouledogues passent <em>moins</em> de temps dans les eaux côtières quand les PAVAC sont déployées. Aucun requin marqué n'a été capturé sur une PAVAC [citation:12].</li>
+            <li><strong>Baisse de fréquentation des bouledogues</strong> : les données acoustiques montrent une baisse d'un facteur 4 de la fréquentation des eaux côtières par les bouledogues entre 2014 et 2019 [citation:12].</li>
         </ul>
     </div>
 
@@ -528,6 +583,7 @@ main { padding: 1.5rem 0 3rem; }
 
 /* ============================================================
    DONNÉES HISTORIQUES — Attaques à La Réunion (1980–2022)
+   62 accidents non provoqués, 55 morsures, 25 mortels
    ============================================================ */
 const ATTACKS_DATA = [
     { date: '1980-05-12', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Pêche sous-marine', severity: 'Léger', fatal: false, hour: 10 },
@@ -592,7 +648,7 @@ const SPOTS = [
     { name: 'Pic du Diable (Saint-Pierre)', lat: -21.340, lon: 55.470, risk: 'Modéré' }
 ];
 
-/* Équipements de surveillance (d'après sources) */
+/* Équipements de surveillance */
 const EQUIPMENTS = [
     { name: 'VRR — Roches Noires', type: 'Caméra sous-marine', lat: -21.016, lon: 55.281, status: 'Opérationnel' },
     { name: 'VRR — Saint-Paul', type: 'Caméra sous-marine', lat: -21.011, lon: 55.271, status: 'Opérationnel' },
@@ -612,20 +668,23 @@ const EQUIPMENTS = [
 
 /* ZONEX (Zones d'Expérimentation) */
 const ZONEX = [
-    { name: 'ZONEX Baie de Saint-Paul', lat: -21.010, lon: 55.270, radius: 1500, status: 'Active' },
-    { name: 'ZONEX Roches Noires', lat: -21.015, lon: 55.280, radius: 1200, status: 'Active' },
-    { name: 'ZONEX Étang-Salé', lat: -21.265, lon: 55.365, radius: 1000, status: 'Active' }
+    { name: 'ZONEX Baie de Saint-Paul', lat: -21.010, lon: 55.270, radius: 1500, status: 'Active', activities: 'Surf, bodyboard' },
+    { name: 'ZONEX Roches Noires', lat: -21.015, lon: 55.280, radius: 1200, status: 'Active', activities: 'Baignade surveillée' },
+    { name: 'ZONEX Étang-Salé', lat: -21.265, lon: 55.365, radius: 1000, status: 'Active', activities: 'Baignade, activités nautiques' },
+    { name: 'ZONEX Trois-Bassins', lat: -21.105, lon: 55.290, radius: 1000, status: 'Active', activities: 'Surf encadré (BSAN)' },
+    { name: 'Lagon Hermitage', lat: -21.090, lon: 55.230, radius: 800, status: 'Sécurisé', activities: 'Baignade (lagon)' },
+    { name: 'Lagon La Saline', lat: -21.080, lon: 55.250, radius: 600, status: 'Sécurisé', activities: 'Baignade (lagon)' }
 ];
 
-/* Captures préventives (2014–2023) — IUCN 2024 */
+/* Captures préventives (2014–2023) */
 const CATCHES_DATA = [
-    { species: 'Requin tigre (Galeocerdo cuvier)', status: 'Ciblé', count: 413, details: 'Programme PR2P' },
-    { species: 'Requin bouledogue (Carcharhinus leucas)', status: 'Ciblé', count: 135, details: 'Programme PR2P' },
+    { species: 'Requin tigre (Galeocerdo cuvier)', status: 'Ciblé', count: 413, details: 'Programme PR2P — 2011-2024' },
+    { species: 'Requin bouledogue (Carcharhinus leucas)', status: 'Ciblé', count: 135, details: 'Programme PR2P — 2011-2024' },
     { species: 'Requin-marteau halicorne (Sphyrna lewini)', status: 'Non ciblé — UICN CR', count: 1, details: 'Relâché ou prélevé' },
     { species: 'Requin cuivre (Carcharhinus brachyurus)', status: 'Non ciblé — UICN VU', count: 1, details: 'Relâché ou prélevé' },
     { species: 'Requin soyeux (Carcharhinus falciformis)', status: 'Non ciblé', count: 1, details: 'Relâché ou prélevé' },
     { species: 'Requin gris de récif (Carcharhinus amblyrhynchos)', status: 'Non ciblé', count: 1, details: 'Relâché ou prélevé' },
-    { species: 'Autres espèces non ciblées', status: 'Non ciblé', count: 59, details: 'Relâchées (taux survie 90,2%)' }
+    { species: 'Autres espèces non ciblées', status: 'Non ciblé', count: 59, details: 'Relâchées (taux survie 90,2 %)' }
 ];
 
 /* Espèces protégées impactées */
@@ -653,7 +712,7 @@ const state = {
     sortDir: {},
     map: null,
     layers: { attacks: null, heat: null, equip: null, spots: null, zonage: null },
-    layersVisible: { heat: true, equip: true, spots: true, zonage: false },
+    layersVisible: { heat: true, equip: true, spots: true, zonage: true },
     filters: { decade: 'all', severity: 'all', activity: 'all' }
 };
 
@@ -669,6 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCharts();
     renderAttacksTable(state.filteredAttacks);
     renderCatchesTable();
+    renderZonesTable();
     updateMapMarkers();
 
     document.getElementById('lastUpdate').textContent = new Date().toLocaleString('fr-FR');
@@ -684,8 +744,8 @@ function updateKPIs() {
     document.getElementById('kpiCatches').textContent = '548';
     document.getElementById('kpiZero').textContent = '7';
     document.getElementById('kpiHours').textContent = '86 000+';
-    document.getElementById('kpiTargetRate').textContent = '32 %';
     document.getElementById('kpiSurvival').textContent = '90,2 %';
+    document.getElementById('kpiZonex').textContent = ZONEX.filter(z => z.status === 'Active').length;
 }
 
 /* ============================================================
@@ -844,7 +904,6 @@ function updateCharts() {
 }
 
 function updateChartsForFilter(filtered) {
-    // Mise à jour du graphique de gravité en fonction du filtre
     const sev = { 'Léger': 0, 'Grave': 0, 'Fatal': 0 };
     filtered.forEach(a => { sev[a.severity] = (sev[a.severity] || 0) + 1; });
     if (state.charts.severity) {
@@ -852,7 +911,6 @@ function updateChartsForFilter(filtered) {
         state.charts.severity.update();
     }
 
-    // Mise à jour du graphique d'activité
     const activities = {};
     filtered.forEach(a => { activities[a.activity] = (activities[a.activity] || 0) + 1; });
     if (state.charts.activity) {
@@ -935,6 +993,21 @@ function renderCatchesTable() {
 }
 
 /* ============================================================
+   TABLEAU ZONES
+   ============================================================ */
+function renderZonesTable() {
+    const tbody = document.getElementById('zonesBody');
+    tbody.innerHTML = ZONEX.map(z => `
+        <tr>
+            <td><strong>${escapeHtml(z.name)}</strong></td>
+            <td><span class="fr-tag fr-tag--zone">${escapeHtml(z.status)}</span></td>
+            <td>${escapeHtml(z.activities)}</td>
+            <td>${z.radius} m</td>
+        </tr>
+    `).join('');
+}
+
+/* ============================================================
    CARTE
    ============================================================ */
 function initMap() {
@@ -947,7 +1020,7 @@ function initMap() {
     state.layers.heat = L.layerGroup().addTo(state.map);
     state.layers.equip = L.layerGroup().addTo(state.map);
     state.layers.spots = L.layerGroup().addTo(state.map);
-    state.layers.zonage = L.layerGroup();
+    state.layers.zonage = L.layerGroup().addTo(state.map);
 
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function() {
@@ -1035,7 +1108,7 @@ function updateMapMarkers() {
     state.layers.zonage.clearLayers();
     ZONEX.forEach(z => {
         L.circle([z.lat, z.lon], { radius: z.radius, color: '#FFD700', fillColor: '#FFD700', fillOpacity: 0.15, weight: 2, dashArray: '5,5' })
-        .bindPopup(`<strong style="color:#8B5A00;">${escapeHtml(z.name)}</strong><br>Statut : ${escapeHtml(z.status)}<br>Rayon : ${z.radius} m`)
+        .bindPopup(`<strong style="color:#8B5A00;">${escapeHtml(z.name)}</strong><br>Statut : ${escapeHtml(z.status)}<br>Activités : ${escapeHtml(z.activities)}<br>Rayon : ${z.radius} m`)
         .addTo(state.layers.zonage);
     });
 
@@ -1077,7 +1150,7 @@ function showAbout() {
         <p style="margin-top:0.75rem;">Il compile uniquement des <strong>données publiques</strong> :</p>
         <ul style="margin:0.75rem 0 0 1.25rem;">
             <li>Publications académiques (46 attaques documentées 1980–2014)</li>
-            <li>Rapports du Centre Sécurité Requin (48 attaques 1980–2021, captures 2014–2023)</li>
+            <li>Rapports du Centre Sécurité Requin (62 accidents 1980–2022, captures 2011–2024)</li>
             <li>Programme Réunionnais de Pêche de Prévention (PR2P)</li>
             <li>Projet CHARC (marquage acoustique, IRD)</li>
             <li>Projet ReMaCAP (caméras BRUVS, Shark Citizen)</li>
@@ -1121,7 +1194,11 @@ function exportCSV() {
         '',
         '## ESPÈCES PROTÉGÉES IMPACTÉES',
         'Espèce,Statut UICN',
-        ...PROTECTED_SPECIES.map(s => [s.name, s.status].map(escape).join(','))
+        ...PROTECTED_SPECIES.map(s => [s.name, s.status].map(escape).join(',')),
+        '',
+        '## ZONEX',
+        'Nom,Statut,Activités,Rayon (m)',
+        ...ZONEX.map(z => [z.name, z.status, z.activities, z.radius].map(escape).join(','))
     ];
     const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1166,8 +1243,8 @@ function exportPDF() {
         ['Taux de mortalité', Math.round((fatal / state.attacks.length) * 100) + ' %'],
         ['Captures ciblées (2014–2023)', 548],
         ['Années sans attaque', '7 (depuis 2019)'],
-        ['Taux capture ciblée', '32 %'],
-        ['Survie captures non ciblées', '90,2 %']
+        ['Taux survie accessoires', '90,2 %'],
+        ['ZONEX actives', ZONEX.filter(z => z.status === 'Active').length]
     ];
     let y = 50;
     doc.setFont('helvetica', 'normal');
@@ -1218,6 +1295,19 @@ function exportPDF() {
         theme: 'striped', headStyles: { fillColor: [179, 0, 179] }, styles: { fontSize: 8 }, margin: { left: 14, right: 14 }
     });
 
+    y = doc.lastAutoTable.finalY + 10;
+    if (y > 235) { doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ZONEX ET ZONES RÉGLEMENTÉES', 14, y);
+    y += 4;
+    doc.autoTable({
+        startY: y,
+        head: [['Zone', 'Statut', 'Activités', 'Rayon']],
+        body: ZONEX.map(z => [z.name, z.status, z.activities, z.radius + ' m']),
+        theme: 'striped', headStyles: { fillColor: [255, 215, 0] }, styles: { fontSize: 8 }, margin: { left: 14, right: 14 }
+    });
+
     const pages = doc.internal.getNumberOfPages();
     for (let p = 1; p <= pages; p++) {
         doc.setPage(p);
@@ -1237,7 +1327,15 @@ document.querySelectorAll('.fr-nav__link').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.fr-nav__link').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const targets = { overview: null, map: 'mapAnchor', attacks: 'attacksAnchor', catches: 'catchesAnchor', tech: 'techAnchor', transparency: 'transparencyAnchor' };
+        const targets = {
+            overview: null,
+            map: 'mapAnchor',
+            attacks: 'attacksAnchor',
+            catches: 'catchesAnchor',
+            tech: 'techAnchor',
+            zones: 'zonesAnchor',
+            transparency: 'transparencyAnchor'
+        };
         const id = targets[btn.dataset.tab];
         if (id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
         else window.scrollTo({ top: 0, behavior: 'smooth' });
