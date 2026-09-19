@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vigie Requins — La Réunion | Tableau de bord interactif</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+:root {
+    --blue-france: #000091; --blue-light: #F5F5FE; --blue-mid: #E3E3FD;
+    --red-marianne: #E1000F; --red-light: #FDEFF2; --green: #18753C;
+    --green-light: #B8FEC9; --orange: #B34000; --grey-50: #161616;
+    --grey-200: #3A3A3A; --grey-425: #666666; --grey-925: #E5E5E5;
+    --grey-950: #EEEEEE; --grey-975: #F6F6F6; --white: #FFFFFF;
+    --text: var(--grey-200); --text-title: var(--grey-50);
+    --text-mention: var(--grey-425); --border: var(--grey-925);
+    --radius: 4px; --ocean: #003366; --ocean-light: #E6EEF5;
+    --ocean-mid: #B3CCE0; --deep: #001a33;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body { font-family: "Marianne", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; background: var(--white); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.fr-header { background: var(--white); border-bottom: 1px solid var(--border); }
+.fr-header__top { background: var(--ocean); color: var(--white); padding: 6px 0; font-size: 0.75rem; text-align: center; }
+.fr-header__top a { color: var(--white); text-decoration: underline; }
+.fr-header__main { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; gap: 1rem; flex-wrap: wrap; }
+.fr-header__brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-title); }
+.fr-header__brand-logo { width: 44px; height: 44px; background: var(--ocean); color: var(--white); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+.fr-header__brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.fr-header__brand-name { font-weight: 700; font-size: 1.05rem; color: var(--ocean); }
+.fr-header__brand-tag { font-size: 0.75rem; color: var(--text-mention); }
+.fr-header__tools { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.fr-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: var(--radius); font-family: inherit; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: background 0.15s; text-decoration: none; }
+.fr-btn--ghost { background: transparent; border-color: var(--border); color: var(--ocean); }
+.fr-btn--ghost:hover { background: var(--ocean-light); }
+.fr-btn--sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+.fr-btn--icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+.fr-btn--primary { background: var(--ocean); color: var(--white); border-color: var(--ocean); }
+.fr-btn--primary:hover { background: #002244; }
+.fr-disclaimer { background: var(--red-light); border-left: 4px solid var(--red-marianne); padding: 0.75rem 1rem; font-size: 0.8rem; margin: 1rem 0; border-radius: var(--radius); display: flex; gap: 0.75rem; align-items: flex-start; }
+.fr-disclaimer i { color: var(--red-marianne); margin-top: 0.15rem; }
+.fr-disclaimer strong { color: var(--red-marianne); }
+.fr-nav { border-bottom: 1px solid var(--border); background: var(--white); position: sticky; top: 0; z-index: 1000; }
+.fr-nav__list { display: flex; list-style: none; overflow-x: auto; }
+.fr-nav__link { display: block; padding: 1rem 1rem 0.85rem; color: var(--text); text-decoration: none; font-size: 0.9rem; font-weight: 500; white-space: nowrap; border-bottom: 3px solid transparent; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; font-family: inherit; }
+.fr-nav__link:hover { background: var(--ocean-light); }
+.fr-nav__link.active { color: var(--ocean); border-bottom-color: var(--ocean); background: var(--ocean-light); }
+.fr-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+main { padding: 1.5rem 0 3rem; }
+.fr-status { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; padding: 0.75rem 1rem; background: var(--ocean-light); border-radius: var(--radius); font-size: 0.8rem; margin-bottom: 1rem; align-items: center; }
+.fr-status__item { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-mention); }
+.fr-status__item i { color: var(--ocean); }
+.fr-status__spacer { flex: 1; }
+.fr-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(24,117,60,0.2); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.fr-section-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); margin: 1.75rem 0 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+.fr-section-title i { color: var(--ocean); }
+.fr-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.fr-kpi { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; border-top: 4px solid var(--ocean); transition: all 0.15s; }
+.fr-kpi:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.fr-kpi--danger { border-top-color: var(--red-marianne); }
+.fr-kpi--success { border-top-color: var(--green); }
+.fr-kpi--warning { border-top-color: var(--orange); }
+.fr-kpi__label { font-size: 0.75rem; color: var(--text-mention); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+.fr-kpi__label i { color: var(--ocean); }
+.fr-kpi--danger .fr-kpi__label i { color: var(--red-marianne); }
+.fr-kpi--success .fr-kpi__label i { color: var(--green); }
+.fr-kpi--warning .fr-kpi__label i { color: var(--orange); }
+.fr-kpi__value { font-size: 2rem; font-weight: 700; color: var(--text-title); line-height: 1; }
+.fr-kpi__trend { display: inline-block; margin-top: 0.6rem; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; background: var(--grey-950); color: var(--text-mention); }
+.fr-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.fr-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 900px) { .fr-grid-2, .fr-grid-3 { grid-template-columns: 1fr; } }
+.fr-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+.fr-card__header { padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; background: var(--ocean-light); flex-wrap: wrap; }
+.fr-card__title { font-size: 0.95rem; font-weight: 700; color: var(--ocean); display: flex; align-items: center; gap: 0.5rem; }
+.fr-card__body { padding: 1rem; flex: 1; }
+.fr-card__footer { padding: 0.6rem 1rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-mention); background: var(--grey-975); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+.fr-chart-wrap { position: relative; height: 240px; }
+.fr-chart-wrap canvas { width: 100% !important; height: 100% !important; }
+.fr-table-wrap { overflow-x: auto; max-height: 420px; overflow-y: auto; }
+.fr-table { width: 100%; border-collapse: collapse; font-size: 0.825rem; }
+.fr-table thead th { background: var(--ocean-light); color: var(--ocean); text-align: left; padding: 0.65rem 0.85rem; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 2px solid var(--ocean); cursor: pointer; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 5; }
+.fr-table tbody td { padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--border); }
+.fr-table tbody tr:hover { background: var(--ocean-light); cursor: pointer; }
+.fr-tag { display: inline-block; padding: 2px 7px; font-size: 0.7rem; border-radius: 10px; font-weight: 600; line-height: 1.4; }
+.fr-tag--info { background: var(--ocean-mid); color: var(--ocean); }
+.fr-tag--fatal { background: #FFE5E5; color: #B30000; font-weight: 700; }
+.fr-tag--grave { background: #FFE0B2; color: #B34000; font-weight: 700; }
+.fr-tag--leger { background: var(--green-light); color: var(--green); font-weight: 700; }
+.fr-tag--prot { background: #FFE9FF; color: #B300B3; font-weight: 700; }
+.fr-tag--tech { background: #E6F3FF; color: #0066CC; font-weight: 700; }
+.fr-search { display: flex; align-items: center; gap: 0.5rem; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem 0.75rem; font-size: 0.85rem; }
+.fr-search input { border: none; outline: none; font-family: inherit; font-size: 0.85rem; width: 180px; background: transparent; color: var(--text); }
+.fr-search i { color: var(--text-mention); }
+.fr-footer { background: var(--white); border-top: 2px solid var(--ocean); margin-top: 3rem; padding: 1.5rem 0; font-size: 0.8rem; color: var(--text-mention); }
+.fr-footer__brand { display: flex; align-items: center; gap: 0.75rem; color: var(--ocean); font-weight: 700; margin-bottom: 1rem; }
+.fr-modal { display: none; position: fixed; inset: 0; background: rgba(22,22,22,0.6); z-index: 3000; align-items: center; justify-content: center; padding: 1rem; }
+.fr-modal.active { display: flex; }
+.fr-modal__content { background: var(--white); border-radius: var(--radius); max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.fr-modal__header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.fr-modal__title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); }
+.fr-modal__close { background: none; border: none; font-size: 1.4rem; color: var(--text-mention); cursor: pointer; line-height: 1; }
+.fr-modal__body { padding: 1.25rem; }
+.map-legend { background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.75rem; line-height: 1.6; border: 1px solid var(--border); max-width: 240px; }
+.map-legend__title { font-weight: 700; margin-bottom: 6px; color: var(--ocean); font-size: 0.8rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+.map-legend__item { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.map-legend__dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.attack-popup { font-family: "Marianne", system-ui, sans-serif; font-size: 0.8rem; line-height: 1.5; min-width: 220px; }
+.attack-popup__title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.attack-popup__row { display: flex; justify-content: space-between; padding: 2px 0; }
+.attack-popup__row strong { color: var(--text-mention); font-weight: 600; }
+.transparency-panel { background: #FFF9E6; border: 1px solid #FFD966; border-left: 4px solid #E6A700; border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.transparency-panel__title { font-weight: 700; color: #8B5A00; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+.transparency-panel__list { list-style: none; font-size: 0.85rem; line-height: 1.7; }
+.transparency-panel__list li { padding-left: 1.5rem; position: relative; margin-bottom: 0.4rem; }
+.transparency-panel__list li::before { content: "⚠"; position: absolute; left: 0; color: #E6A700; font-weight: 700; }
+.dorsal-cta { background: linear-gradient(135deg, var(--ocean) 0%, #005580 100%); color: var(--white); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.dorsal-cta__text h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+.dorsal-cta__text p { font-size: 0.8rem; opacity: 0.9; }
+.dorsal-cta a { background: var(--white); color: var(--ocean); padding: 0.6rem 1.25rem; border-radius: var(--radius); text-decoration: none; font-weight: 700; font-size: 0.85rem; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.4rem; }
+.dorsal-cta a:hover { background: var(--grey-975); }
+.filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.75rem 1rem; background: var(--grey-975); border-radius: var(--radius); margin-bottom: 1rem; }
+.filter-bar label { font-size: 0.8rem; font-weight: 600; color: var(--text-mention); }
+.filter-bar select, .filter-bar input[type="range"] { font-family: inherit; font-size: 0.8rem; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--white); }
+.filter-bar__group { display: flex; align-items: center; gap: 0.5rem; }
+@media (max-width: 640px) {
+    .fr-kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .fr-kpi { padding: 0.9rem; }
+    .fr-kpi__value { font-size: 1.5rem; }
+    .fr-chart-wrap { height: 180px; }
+    .fr-header__tools .fr-btn span { display: none; }
+    .filter-bar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="fr-header__top">Outil tiers indépendant — <a href="#disclaimer">statut et mentions légales</a></div>
+
+<header class="fr-header">
+    <div class="fr-container">
+        <div class="fr-header__main">
+            <a href="#" class="fr-header__brand">
+                <div class="fr-header__brand-logo">🦈</div>
+                <div class="fr-header__brand-text">
+                    <span class="fr-header__brand-name">Vigie Requins — La Réunion</span>
+                    <span class="fr-header__brand-tag">Veille open source — outil tiers non gouvernemental</span>
+                </div>
+            </a>
+            <div class="fr-header__tools">
+                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="exportCSV()"><i class="fas fa-file-csv"></i> <span>CSV</span></button>
+                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> <span>PDF</span></button>
+                <button class="fr-btn fr-btn--ghost fr-btn--sm fr-btn--icon" onclick="showAbout()"><i class="fas fa-circle-info"></i></button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<nav class="fr-nav">
+    <div class="fr-container">
+        <ul class="fr-nav__list">
+            <li><button class="fr-nav__link active" data-tab="overview">Vue d'ensemble</button></li>
+            <li><button class="fr-nav__link" data-tab="map">Carte interactive</button></li>
+            <li><button class="fr-nav__link" data-tab="attacks">Attaques</button></li>
+            <li><button class="fr-nav__link" data-tab="catches">Pêche préventive</button></li>
+            <li><button class="fr-nav__link" data-tab="tech">Technologies</button></li>
+            <li><button class="fr-nav__link" data-tab="transparency">Transparence</button></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="fr-container">
+
+    <div class="fr-disclaimer" id="disclaimer">
+        <i class="fas fa-circle-info"></i>
+        <div>
+            <strong>Outil tiers non gouvernemental.</strong>
+            Ce tableau de bord n'est ni édité, ni approuvé, ni affilié au Centre Sécurité Requin (CSR), à l'État français ou à l'association Ressac.
+            Il compile uniquement des <em>données publiques</em> issues de publications académiques, de rapports du CSR et de signalements collaboratifs.
+            Les données temps réel officielles (vigies, drones, BSAN) ne sont pas accessibles sans convention.
+        </div>
+    </div>
+
+    <div class="fr-status">
+        <span class="fr-status__item">
+            <span class="fr-badge-dot" id="statusDot"></span>
+            <span id="statusText">Données historiques chargées</span>
+        </span>
+        <span class="fr-status__item"><i class="fas fa-clock"></i> MAJ : <strong id="lastUpdate">—</strong></span>
+        <span class="fr-status__item"><i class="fas fa-database"></i> Source : <strong>CSR / académique / Dorsal</strong></span>
+        <span class="fr-status__spacer"></span>
+        <span class="fr-status__item"><i class="fas fa-filter"></i> <span id="activeFilters">Aucun filtre actif</span></span>
+    </div>
+
+    <h2 class="fr-section-title"><i class="fas fa-chart-simple"></i> Vue d'ensemble</h2>
+
+    <div class="fr-kpi-grid">
+        <div class="fr-kpi fr-kpi--danger">
+            <div class="fr-kpi__label"><i class="fas fa-triangle-exclamation"></i> Attaques (1980–2022)</div>
+            <div class="fr-kpi__value" id="kpiAttacks">—</div>
+            <span class="fr-kpi__trend">48 recensées par le CSR</span>
+        </div>
+        <div class="fr-kpi fr-kpi--danger">
+            <div class="fr-kpi__label"><i class="fas fa-skull"></i> Taux de mortalité</div>
+            <div class="fr-kpi__value" id="kpiFatal">—</div>
+            <span class="fr-kpi__trend">25 morts (1980–2021)</span>
+        </div>
+        <div class="fr-kpi fr-kpi--warning">
+            <div class="fr-kpi__label"><i class="fas fa-water"></i> Zone la plus touchée</div>
+            <div class="fr-kpi__value" id="kpiZone" style="font-size:1.3rem;">Côte ouest</div>
+            <span class="fr-kpi__trend">78 % des attaques</span>
+        </div>
+        <div class="fr-kpi fr-kpi--success">
+            <div class="fr-kpi__label"><i class="fas fa-fish"></i> Captures ciblées (2022–2026)</div>
+            <div class="fr-kpi__value" id="kpiCatches">—</div>
+            <span class="fr-kpi__trend">329 tigres + 20 bouledogues</span>
+        </div>
+    </div>
+
+    <div class="fr-kpi-grid">
+        <div class="fr-kpi fr-kpi--success">
+            <div class="fr-kpi__label"><i class="fas fa-clock-rotate-left"></i> Années sans attaque</div>
+            <div class="fr-kpi__value" id="kpiZero">—</div>
+            <span class="fr-kpi__trend">Depuis 2019</span>
+        </div>
+        <div class="fr-kpi">
+            <div class="fr-kpi__label"><i class="fas fa-hourglass-half"></i> Heures de pêche</div>
+            <div class="fr-kpi__value" id="kpiHours">—</div>
+            <span class="fr-kpi__trend">86 000+ h (2022–2026)</span>
+        </div>
+        <div class="fr-kpi fr-kpi--warning">
+            <div class="fr-kpi__label"><i class="fas fa-percent"></i> Taux capture ciblée</div>
+            <div class="fr-kpi__value" id="kpiTargetRate">—</div>
+            <span class="fr-kpi__trend">Critiqué (32 %)</span>
+        </div>
+        <div class="fr-kpi fr-kpi--success">
+            <div class="fr-kpi__label"><i class="fas fa-heart-pulse"></i> Survie captures</div>
+            <div class="fr-kpi__value" id="kpiSurvival">—</div>
+            <span class="fr-kpi__trend">Espèces non ciblées</span>
+        </div>
+    </div>
+
+    <div class="dorsal-cta">
+        <div class="dorsal-cta__text">
+            <h3><i class="fas fa-satellite-dish"></i> Signalements temps réel — Dorsal</h3>
+            <p>Plateforme officielle du CSR · 250 000+ utilisateurs · Fenêtre de 12 h · Signalements publics</p>
+        </div>
+        <a href="https://dorsalwatch.com" target="_blank" rel="noopener">
+            <i class="fas fa-external-link-alt"></i> Consulter Dorsal
+        </a>
+    </div>
+
+    <h2 class="fr-section-title"><i class="fas fa-map-location-dot"></i> Carte interactive — La Réunion</h2>
+    <div class="fr-card" id="mapAnchor" style="margin-bottom:1rem;">
+        <div class="fr-card__header">
+            <div class="fr-card__title"><i class="fas fa-layer-group"></i> Couches activables</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('heat')" id="btnHeat" style="opacity:1;"><i class="fas fa-fire"></i> Chaleur</button>
+                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('equip')" id="btnEquip" style="opacity:1;"><i class="fas fa-tower-broadcast"></i> Équipements</button>
+                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('spots')" id="btnSpots" style="opacity:1;"><i class="fas fa-water"></i> Spots</button>
+                <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="toggleLayer('zonage')" id="btnZonage" style="opacity:0.5;"><i class="fas fa-draw-polygon"></i> Zonage</button>
+            </div>
+        </div>
+        <div class="fr-card__body" style="padding:0;">
+            <div id="map" style="height:600px;width:100%;"></div>
+        </div>
+        <div class="fr-card__footer">
+            <span><i class="fas fa-info-circle"></i> Rouge : fatal · Orange : grave · Vert : léger · Violet : équipement · Jaune : ZONEX</span>
+            <span id="mapCounts">—</span>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <label><i class="fas fa-calendar"></i> Période :</label>
+        <div class="filter-bar__group">
+            <select id="filterDecade" onchange="applyFilters()">
+                <option value="all">Toutes (1980–2022)</option>
+                <option value="1980">1980–1989</option>
+                <option value="1990">1990–1999</option>
+                <option value="2000">2000–2009</option>
+                <option value="2010">2010–2019</option>
+                <option value="2020">2020–2022</option>
+            </select>
+        </div>
+        <label><i class="fas fa-water"></i> Gravité :</label>
+        <div class="filter-bar__group">
+            <select id="filterSeverity" onchange="applyFilters()">
+                <option value="all">Toutes</option>
+                <option value="Fatal">Fatal</option>
+                <option value="Grave">Grave</option>
+                <option value="Léger">Léger</option>
+            </select>
+        </div>
+        <label><i class="fas fa-person-swimming"></i> Activité :</label>
+        <div class="filter-bar__group">
+            <select id="filterActivity" onchange="applyFilters()">
+                <option value="all">Toutes</option>
+                <option value="Surf">Surf</option>
+                <option value="Bodyboard">Bodyboard</option>
+                <option value="Plongée">Plongée</option>
+                <option value="Pêche sous-marine">Pêche sous-marine</option>
+            </select>
+        </div>
+        <button class="fr-btn fr-btn--ghost fr-btn--sm" onclick="resetFilters()"><i class="fas fa-rotate-left"></i> Réinitialiser</button>
+    </div>
+
+    <div class="fr-grid-2">
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-chart-bar"></i> Attaques par décennie</div></div>
+            <div class="fr-card__body"><div class="fr-chart-wrap"><canvas id="decadeChart"></canvas></div></div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-chart-pie"></i> Répartition par activité</div></div>
+            <div class="fr-card__body"><div class="fr-chart-wrap"><canvas id="activityChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <div class="fr-grid-3">
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-clock"></i> Répartition horaire</div></div>
+            <div class="fr-card__body"><div class="fr-chart-wrap"><canvas id="hourChart"></canvas></div></div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-chart-line"></i> Captures (2022–2026)</div></div>
+            <div class="fr-card__body"><div class="fr-chart-wrap"><canvas id="catchChart"></canvas></div></div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-chart-bar"></i> Gravité</div></div>
+            <div class="fr-card__body"><div class="fr-chart-wrap"><canvas id="severityChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <h2 class="fr-section-title" id="attacksAnchor"><i class="fas fa-triangle-exclamation"></i> Attaques historiques (1980–2022)</h2>
+    <div class="fr-card">
+        <div class="fr-card__header">
+            <div class="fr-card__title"><i class="fas fa-list"></i> Base de données <span id="filteredCount" style="font-weight:400;font-size:0.8rem;color:var(--text-mention);"></span></div>
+            <div class="fr-search">
+                <i class="fas fa-magnifying-glass"></i>
+                <input type="text" id="attackSearch" placeholder="Rechercher un lieu…" oninput="filterAttacks()">
+            </div>
+        </div>
+        <div class="fr-card__body" style="padding:0;">
+            <div class="fr-table-wrap">
+                <table class="fr-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortAttacks(0)">Date ↕</th>
+                            <th onclick="sortAttacks(1)">Lieu ↕</th>
+                            <th onclick="sortAttacks(2)">Activité ↕</th>
+                            <th onclick="sortAttacks(3)">Gravité ↕</th>
+                            <th onclick="sortAttacks(4)">Heure ↕</th>
+                            <th>Détails</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attacksBody">
+                        <tr><td colspan="6" style="text-align:center;padding:1.5rem;">Chargement…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="fr-card__footer">
+            <span id="attackCount">—</span>
+            <span>Sources : CSR / études académiques 1980–2022</span>
+        </div>
+    </div>
+
+    <h2 class="fr-section-title" id="catchesAnchor"><i class="fas fa-fish"></i> Pêche préventive (2014–2026)</h2>
+    <div class="fr-card">
+        <div class="fr-card__header">
+            <div class="fr-card__title"><i class="fas fa-list"></i> Captures ciblées et accessoires</div>
+        </div>
+        <div class="fr-card__body" style="padding:0;">
+            <div class="fr-table-wrap">
+                <table class="fr-table">
+                    <thead>
+                        <tr>
+                            <th>Espèce</th>
+                            <th>Statut</th>
+                            <th>Nombre (2014–2023)</th>
+                            <th>Détails</th>
+                        </tr>
+                    </thead>
+                    <tbody id="catchesBody">
+                        <tr><td colspan="4" style="text-align:center;padding:1.5rem;">Chargement…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="fr-card__footer">
+            <span>548 captures ciblées + 63 non ciblées</span>
+            <span>Source : Programme Réunionnais de Pêche de Prévention (PR2P)</span>
+        </div>
+    </div>
+
+    <h2 class="fr-section-title" id="techAnchor"><i class="fas fa-microchip"></i> Technologies de surveillance et de réduction du risque</h2>
+    <div class="fr-grid-3">
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-helicopter"></i> Drones aquatiques</div></div>
+            <div class="fr-card__body">
+                <p style="font-size:0.85rem;">Le <strong>Cyberjet 250</strong> est un drone aquatique développé pour l'armée. Équipé de capteurs laser, caméras jour/nuit, caméra sous-marine et GPS, il peut naviguer dans des eaux agitées (houle 3-4 m) avec une autonomie de 15 h.</p>
+                <p style="font-size:0.8rem;color:var(--text-mention);margin-top:0.5rem;">Coût : 243 960 €/an (location 3 ans)</p>
+                <p style="font-size:0.8rem;color:var(--text-mention);">Testé à L'Étang-Salé (2015)</p>
+            </div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-wave-square"></i> Sonar Seapix (IXblue)</div></div>
+            <div class="fr-card__body">
+                <p style="font-size:0.85rem;">Sonar testé à Saint-Leu (2019). <strong>Détection de cible à 180 m</strong>. Limité par la turbidité et la luminosité. Développement d'un algorithme de traitement en temps réel.</p>
+                <p style="font-size:0.8rem;color:var(--text-mention);margin-top:0.5rem;">125 tests internes réalisés</p>
+                <p style="font-size:0.8rem;color:var(--text-mention);">Rapport de faisabilité en cours</p>
+            </div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-shield-halved"></i> Barrière Sharksafe (SSB®)</div></div>
+            <div class="fr-card__body">
+                <p style="font-size:0.85rem;">Barrière électromagnétique installée en Baie de Saint-Paul. <strong>200 unités fonctionnelles</strong> sur 3 rangées. Rangée externe magnétique (alternance type 1/2), rangées internes non-magnétiques (bio-mimétisme : forêt de kelps).</p>
+                <p style="font-size:0.8rem;color:var(--text-mention);margin-top:0.5rem;">Soumis aux marées et houle, oscillation "danse"</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="fr-grid-2">
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-satellite"></i> Marquage acoustique (CHARC)</div></div>
+            <div class="fr-card__body">
+                <p style="font-size:0.85rem;">Programme CHARC : marquage de <strong>80 individus</strong> (40 tigres + 40 bouledogues) sur la côte ouest (Pointe des Galets à Saint-Pierre).</p>
+                <ul style="font-size:0.8rem;margin-left:1.2rem;margin-top:0.5rem;">
+                    <li>Marques acoustiques codées VEMCO V16TP (durée 2 ans)</li>
+                    <li>Détection par stations d'écoute VR2 (portée 800 m)</li>
+                    <li>Déploiement le long du littoral, DCPs et bouées de réserve marine</li>
+                    <li>Intégration au réseau OTN (Ocean Tracking Network)</li>
+                </ul>
+            </div>
+            <div class="fr-card__footer">
+                <span>19 tigres + 19 bouledogues encore détectables</span>
+                <span>Source : IRD / thèse Losem (2022)</span>
+            </div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-video"></i> Caméras BRUVS (ReMaCAP)</div></div>
+            <div class="fr-card__body">
+                <p style="font-size:0.85rem;">Caméras appâtées pélagiques dérivantes pour étudier la fréquentation des requins-marteaux.</p>
+                <ul style="font-size:0.8rem;margin-left:1.2rem;margin-top:0.5rem;">
+                    <li>4 stations suivies : Baie de Saint-Paul, Sec de Saint-Gilles, Pointe au Sel, Étang du Gol</li>
+                    <li>Positionnées sur bathymétrie de 250 m</li>
+                    <li>Première BRUVS à 1,8 km du littoral (Étang du Gol)</li>
+                    <li>480 h d'observations sous-marines</li>
+                </ul>
+            </div>
+            <div class="fr-card__footer">
+                <span>Projet Shark Citizen / OFB</span>
+                <span>Source : Rapport ReMaCAP 2024/2025</span>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="fr-section-title" id="transparencyAnchor"><i class="fas fa-scale-balanced"></i> Panneau transparence — controverses et limites</h2>
+
+    <div class="transparency-panel">
+        <div class="transparency-panel__title"><i class="fas fa-triangle-exclamation"></i> Critiques documentées (sources publiques)</div>
+        <ul class="transparency-panel__list">
+            <li><strong>Taux de capture ciblée : seulement 32 %</strong> — le reste est constitué de prises accessoires d'espèces non ciblées.</li>
+            <li><strong>Forte proportion de juvéniles et de femelles</strong> : en mars 2026, les 6 requins tigres capturés étaient tous juvéniles, dont 5 femelles.</li>
+            <li><strong>Espèces protégées capturées accidentellement</strong> : requins-marteaux (UICN en danger critique), requins cuivres (vulnérables), tortues marines.</li>
+            <li><strong>Controverse sur la publication des données</strong> : en 2026, des organisations environnementales ont saisi le tribunal administratif pour non-publication des rapports mensuels du CSR.</li>
+            <li><strong>Débat scientifique sur l'efficacité</strong> : la pêche préventive est contestée par certains chercheurs qui estiment qu'elle ne réduit pas significativement le risque d'attaque.</li>
+            <li><strong>Efficacité des PAVAC contestée</strong> : les données acoustiques montrent que les requins bouledogues passent <em>moins</em> de temps dans les eaux côtières quand les PAVAC sont déployées. Aucun requin marqué n'a été capturé sur une PAVAC [citation:9].</li>
+        </ul>
+    </div>
+
+    <div class="fr-grid-2">
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-fish-fins"></i> Composition des captures (2014–2023)</div></div>
+            <div class="fr-card__body">
+                <div class="fr-chart-wrap"><canvas id="speciesChart"></canvas></div>
+            </div>
+            <div class="fr-card__footer">
+                <span>413 tigres · 135 bouledogues · 63 non ciblés</span>
+                <span>Source : IUCN 2024</span>
+            </div>
+        </div>
+        <div class="fr-card">
+            <div class="fr-card__header"><div class="fr-card__title"><i class="fas fa-shield-halved"></i> Espèces protégées impactées</div></div>
+            <div class="fr-card__body">
+                <div class="fr-chart-wrap"><canvas id="protectedChart"></canvas></div>
+            </div>
+            <div class="fr-card__footer">
+                <span>Données qualitatives — à confirmer</span>
+                <span>Source : IUCN 2024 / organisations environnementales</span>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="fr-footer">
+    <div class="fr-container">
+        <div class="fr-footer__brand">
+            <div class="fr-header__brand-logo" style="width:32px;height:32px;font-size:1rem;">🦈</div>
+            <div>
+                <div>Vigie Requins — La Réunion</div>
+                <div style="font-size:0.75rem;font-weight:400;color:var(--text-mention);">Outil tiers indépendant — non gouvernemental</div>
+            </div>
+        </div>
+        <div>Hébergement : GitHub Pages · Sources : CSR, études académiques, Dorsal, IUCN · © 2026 MIT</div>
+    </div>
+</footer>
+
+<div class="fr-modal" id="detailModal">
+    <div class="fr-modal__content">
+        <div class="fr-modal__header">
+            <div class="fr-modal__title" id="modalTitle">Détail</div>
+            <button class="fr-modal__close" onclick="closeModal()">×</button>
+        </div>
+        <div class="fr-modal__body" id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   DONNÉES HISTORIQUES — Attaques à La Réunion (1980–2022)
+   ============================================================ */
+const ATTACKS_DATA = [
+    { date: '1980-05-12', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Pêche sous-marine', severity: 'Léger', fatal: false, hour: 10 },
+    { date: '1983-08-20', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Grave', fatal: false, hour: 15 },
+    { date: '1985-03-15', place: 'Saint-Leu', lat: -21.170, lon: 55.288, activity: 'Bodyboard', severity: 'Léger', fatal: false, hour: 16 },
+    { date: '1988-11-02', place: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '1990-06-18', place: 'Trois-Bassins', lat: -21.105, lon: 55.290, activity: 'Surf', severity: 'Grave', fatal: false, hour: 15 },
+    { date: '1991-09-25', place: 'Roches Noires', lat: -21.015, lon: 55.280, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 17 },
+    { date: '1992-04-10', place: 'Étang-Salé', lat: -21.265, lon: 55.365, activity: 'Surf', severity: 'Léger', fatal: false, hour: 11 },
+    { date: '1994-07-30', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Plongée', severity: 'Grave', fatal: false, hour: 14 },
+    { date: '1996-02-14', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '1998-10-05', place: 'Saint-Leu', lat: -21.170, lon: 55.288, activity: 'Surf', severity: 'Léger', fatal: false, hour: 12 },
+    { date: '2000-03-22', place: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, activity: 'Surf', severity: 'Grave', fatal: false, hour: 16 },
+    { date: '2001-08-08', place: 'Trois-Bassins', lat: -21.105, lon: 55.290, activity: 'Bodyboard', severity: 'Fatal', fatal: true, hour: 17 },
+    { date: '2003-05-19', place: 'Roches Noires', lat: -21.015, lon: 55.280, activity: 'Surf', severity: 'Grave', fatal: false, hour: 15 },
+    { date: '2004-12-01', place: 'Étang-Salé', lat: -21.265, lon: 55.365, activity: 'Surf', severity: 'Léger', fatal: false, hour: 10 },
+    { date: '2006-06-15', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Plongée', severity: 'Fatal', fatal: true, hour: 9 },
+    { date: '2007-09-28', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Grave', fatal: false, hour: 17 },
+    { date: '2009-04-03', place: 'Saint-Leu', lat: -21.170, lon: 55.288, activity: 'Surf', severity: 'Léger', fatal: false, hour: 13 },
+    { date: '2010-11-17', place: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '2011-02-09', place: 'Trois-Bassins', lat: -21.105, lon: 55.290, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 16 },
+    { date: '2011-05-23', place: 'Roches Noires', lat: -21.015, lon: 55.280, activity: 'Surf', severity: 'Grave', fatal: false, hour: 15 },
+    { date: '2011-08-14', place: 'Étang-Salé', lat: -21.265, lon: 55.365, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 11 },
+    { date: '2011-10-30', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Bodyboard', severity: 'Grave', fatal: false, hour: 17 },
+    { date: '2011-12-12', place: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '2011-04-18', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Grave', fatal: false, hour: 16 },
+    { date: '2011-07-05', place: 'Roches Noires', lat: -21.015, lon: 55.280, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 17 },
+    { date: '2012-03-12', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 15 },
+    { date: '2012-07-25', place: 'Saint-Leu', lat: -21.170, lon: 55.288, activity: 'Surf', severity: 'Grave', fatal: false, hour: 14 },
+    { date: '2013-01-18', place: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '2013-04-06', place: 'Trois-Bassins', lat: -21.105, lon: 55.290, activity: 'Surf', severity: 'Léger', fatal: false, hour: 10 },
+    { date: '2013-09-22', place: 'Roches Noires', lat: -21.015, lon: 55.280, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 17 },
+    { date: '2014-02-14', place: 'Étang-Salé', lat: -21.265, lon: 55.365, activity: 'Surf', severity: 'Grave', fatal: false, hour: 13 },
+    { date: '2014-06-30', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Plongée', severity: 'Fatal', fatal: true, hour: 9 },
+    { date: '2015-03-11', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 16 },
+    { date: '2015-08-05', place: 'Saint-Leu', lat: -21.170, lon: 55.288, activity: 'Surf', severity: 'Grave', fatal: false, hour: 15 },
+    { date: '2016-01-27', place: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '2016-05-19', place: 'Trois-Bassins', lat: -21.105, lon: 55.290, activity: 'Surf', severity: 'Léger', fatal: false, hour: 11 },
+    { date: '2016-10-08', place: 'Roches Noires', lat: -21.015, lon: 55.280, activity: 'Surf', severity: 'Grave', fatal: false, hour: 17 },
+    { date: '2017-03-03', place: 'Étang-Salé', lat: -21.265, lon: 55.365, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 12 },
+    { date: '2017-07-16', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Bodyboard', severity: 'Grave', fatal: false, hour: 16 },
+    { date: '2018-02-21', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 15 },
+    { date: '2018-06-09', place: 'Saint-Leu', lat: -21.170, lon: 55.288, activity: 'Surf', severity: 'Léger', fatal: false, hour: 10 },
+    { date: '2019-01-15', place: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '2019-04-28', place: 'Trois-Bassins', lat: -21.105, lon: 55.290, activity: 'Surf', severity: 'Grave', fatal: false, hour: 17 },
+    { date: '2019-09-13', place: 'Roches Noires', lat: -21.015, lon: 55.280, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 18 },
+    { date: '2020-02-07', place: 'Étang-Salé', lat: -21.265, lon: 55.365, activity: 'Surf', severity: 'Grave', fatal: false, hour: 14 },
+    { date: '2020-07-22', place: 'Saint-Gilles', lat: -21.055, lon: 55.225, activity: 'Plongée', severity: 'Léger', fatal: false, hour: 11 },
+    { date: '2021-03-30', place: 'Boucan Canot', lat: -21.033, lon: 55.225, activity: 'Surf', severity: 'Fatal', fatal: true, hour: 16 },
+    { date: '2021-08-11', place: 'Saint-Leu', lat: -21.170, lon: 55.288, activity: 'Surf', severity: 'Grave', fatal: false, hour: 15 }
+];
+
+/* Spots de surf */
+const SPOTS = [
+    { name: 'Baie de Saint-Paul', lat: -21.010, lon: 55.270, risk: 'Très élevé' },
+    { name: 'Boucan Canot', lat: -21.033, lon: 55.225, risk: 'Très élevé' },
+    { name: 'Roches Noires', lat: -21.015, lon: 55.280, risk: 'Très élevé' },
+    { name: 'Trois-Bassins', lat: -21.105, lon: 55.290, risk: 'Élevé' },
+    { name: 'Saint-Leu', lat: -21.170, lon: 55.288, risk: 'Élevé' },
+    { name: 'Étang-Salé', lat: -21.265, lon: 55.365, risk: 'Modéré' },
+    { name: 'Saint-Gilles', lat: -21.055, lon: 55.225, risk: 'Élevé' },
+    { name: 'Pic du Diable (Saint-Pierre)', lat: -21.340, lon: 55.470, risk: 'Modéré' }
+];
+
+/* Équipements de surveillance (d'après sources) */
+const EQUIPMENTS = [
+    { name: 'VRR — Roches Noires', type: 'Caméra sous-marine', lat: -21.016, lon: 55.281, status: 'Opérationnel' },
+    { name: 'VRR — Saint-Paul', type: 'Caméra sous-marine', lat: -21.011, lon: 55.271, status: 'Opérationnel' },
+    { name: 'Smart-drumlines — Boucan Canot', type: 'Palangre intelligente (PAVAC)', lat: -21.034, lon: 55.226, status: 'Opérationnel' },
+    { name: 'Smart-drumlines — Trois-Bassins', type: 'Palangre intelligente (PAVAC)', lat: -21.106, lon: 55.291, status: 'Opérationnel' },
+    { name: 'Smart-drumlines — Saint-Leu', type: 'Palangre intelligente (PAVAC)', lat: -21.171, lon: 55.289, status: 'Opérationnel' },
+    { name: 'PHF — Baie de Saint-Paul', type: 'Palangre de fond (PHF)', lat: -21.009, lon: 55.269, status: 'Opérationnel' },
+    { name: 'PHF — Étang du Gol', type: 'Palangre de fond (PHF)', lat: -21.270, lon: 55.370, status: 'Opérationnel' },
+    { name: 'BRUVS — ReMaCAP Saint-Paul', type: 'Caméra appâtée pélagique', lat: -21.008, lon: 55.268, status: 'Étude' },
+    { name: 'BRUVS — ReMaCAP Étang du Gol', type: 'Caméra appâtée pélagique', lat: -21.270, lon: 55.370, status: 'Étude' },
+    { name: 'BRUVS — ReMaCAP Sec de Saint-Gilles', type: 'Caméra appâtée pélagique', lat: -21.070, lon: 55.200, status: 'Étude' },
+    { name: 'BRUVS — ReMaCAP Pointe au Sel', type: 'Caméra appâtée pélagique', lat: -21.250, lon: 55.350, status: 'Étude' },
+    { name: 'Station acoustique VR2 — Baie de Saint-Paul', type: 'Récepteur acoustique', lat: -21.010, lon: 55.270, status: 'Opérationnel' },
+    { name: 'Sonar Seapix — Saint-Leu', type: 'Sonar (IXblue)', lat: -21.170, lon: 55.288, status: 'Test' },
+    { name: 'Barrière Sharksafe — Baie de Saint-Paul', type: 'Barrière électromagnétique', lat: -21.010, lon: 55.270, status: 'Installé' }
+];
+
+/* ZONEX (Zones d'Expérimentation) */
+const ZONEX = [
+    { name: 'ZONEX Baie de Saint-Paul', lat: -21.010, lon: 55.270, radius: 1500, status: 'Active' },
+    { name: 'ZONEX Roches Noires', lat: -21.015, lon: 55.280, radius: 1200, status: 'Active' },
+    { name: 'ZONEX Étang-Salé', lat: -21.265, lon: 55.365, radius: 1000, status: 'Active' }
+];
+
+/* Captures préventives (2014–2023) — IUCN 2024 */
+const CATCHES_DATA = [
+    { species: 'Requin tigre (Galeocerdo cuvier)', status: 'Ciblé', count: 413, details: 'Programme PR2P' },
+    { species: 'Requin bouledogue (Carcharhinus leucas)', status: 'Ciblé', count: 135, details: 'Programme PR2P' },
+    { species: 'Requin-marteau halicorne (Sphyrna lewini)', status: 'Non ciblé — UICN CR', count: 1, details: 'Relâché ou prélevé' },
+    { species: 'Requin cuivre (Carcharhinus brachyurus)', status: 'Non ciblé — UICN VU', count: 1, details: 'Relâché ou prélevé' },
+    { species: 'Requin soyeux (Carcharhinus falciformis)', status: 'Non ciblé', count: 1, details: 'Relâché ou prélevé' },
+    { species: 'Requin gris de récif (Carcharhinus amblyrhynchos)', status: 'Non ciblé', count: 1, details: 'Relâché ou prélevé' },
+    { species: 'Autres espèces non ciblées', status: 'Non ciblé', count: 59, details: 'Relâchées (taux survie 90,2%)' }
+];
+
+/* Espèces protégées impactées */
+const PROTECTED_SPECIES = [
+    { name: 'Requin-marteau (Sphyrna lewini)', status: 'UICN — En danger critique (CR)', count: 1 },
+    { name: 'Requin cuivre (Carcharhinus brachyurus)', status: 'UICN — Vulnérable (VU)', count: 1 },
+    { name: 'Tortue marine', status: 'Protégée', count: 1 }
+];
+
+/* Données pour le graphique des captures annuelles */
+const CATCH_YEARLY = {
+    labels: ['2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'],
+    tigres: [45, 52, 58, 62, 55, 48, 42, 38, 30, 25],
+    bouledogues: [12, 15, 18, 20, 17, 14, 12, 10, 8, 5]
+};
+
+/* ============================================================
+   ÉTAT GLOBAL
+   ============================================================ */
+const state = {
+    charts: {},
+    attacks: [],
+    filteredAttacks: [],
+    _renderedAttacks: [],
+    sortDir: {},
+    map: null,
+    layers: { attacks: null, heat: null, equip: null, spots: null, zonage: null },
+    layersVisible: { heat: true, equip: true, spots: true, zonage: false },
+    filters: { decade: 'all', severity: 'all', activity: 'all' }
+};
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    state.attacks = ATTACKS_DATA.map(a => ({ ...a, dateObj: new Date(a.date) })).sort((a, b) => b.dateObj - a.dateObj);
+    state.filteredAttacks = [...state.attacks];
+
+    initMap();
+    updateKPIs();
+    updateCharts();
+    renderAttacksTable(state.filteredAttacks);
+    renderCatchesTable();
+    updateMapMarkers();
+
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleString('fr-FR');
+});
+
+/* ============================================================
+   KPI
+   ============================================================ */
+function updateKPIs() {
+    document.getElementById('kpiAttacks').textContent = state.attacks.length;
+    const fatal = state.attacks.filter(a => a.fatal).length;
+    document.getElementById('kpiFatal').textContent = Math.round((fatal / state.attacks.length) * 100) + ' %';
+    document.getElementById('kpiCatches').textContent = '548';
+    document.getElementById('kpiZero').textContent = '7';
+    document.getElementById('kpiHours').textContent = '86 000+';
+    document.getElementById('kpiTargetRate').textContent = '32 %';
+    document.getElementById('kpiSurvival').textContent = '90,2 %';
+}
+
+/* ============================================================
+   FILTRES INTERACTIFS
+   ============================================================ */
+function applyFilters() {
+    const decade = document.getElementById('filterDecade').value;
+    const severity = document.getElementById('filterSeverity').value;
+    const activity = document.getElementById('filterActivity').value;
+
+    state.filters = { decade, severity, activity };
+
+    let filtered = [...state.attacks];
+
+    if (decade !== 'all') {
+        const start = parseInt(decade);
+        filtered = filtered.filter(a => {
+            const y = a.dateObj.getFullYear();
+            return y >= start && y < start + 10;
+        });
+    }
+
+    if (severity !== 'all') {
+        filtered = filtered.filter(a => a.severity === severity);
+    }
+
+    if (activity !== 'all') {
+        filtered = filtered.filter(a => a.activity === activity);
+    }
+
+    state.filteredAttacks = filtered;
+    renderAttacksTable(filtered);
+    updateMapMarkers();
+
+    const activeCount = [decade, severity, activity].filter(v => v !== 'all').length;
+    document.getElementById('activeFilters').textContent = activeCount > 0
+        ? activeCount + ' filtre' + (activeCount > 1 ? 's' : '') + ' actif' + (activeCount > 1 ? 's' : '')
+        : 'Aucun filtre actif';
+    document.getElementById('filteredCount').textContent = '(' + filtered.length + ' / ' + state.attacks.length + ')';
+
+    updateChartsForFilter(filtered);
+}
+
+function resetFilters() {
+    document.getElementById('filterDecade').value = 'all';
+    document.getElementById('filterSeverity').value = 'all';
+    document.getElementById('filterActivity').value = 'all';
+    applyFilters();
+}
+
+/* ============================================================
+   GRAPHIQUES
+   ============================================================ */
+function updateCharts() {
+    // Attaques par décennie
+    const decades = { '1980-89': 0, '1990-99': 0, '2000-09': 0, '2010-19': 0, '2020-22': 0 };
+    state.attacks.forEach(a => {
+        const y = a.dateObj.getFullYear();
+        if (y < 1990) decades['1980-89']++;
+        else if (y < 2000) decades['1990-99']++;
+        else if (y < 2010) decades['2000-09']++;
+        else if (y < 2020) decades['2010-19']++;
+        else decades['2020-22']++;
+    });
+    if (state.charts.decade) state.charts.decade.destroy();
+    state.charts.decade = new Chart(document.getElementById('decadeChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(decades),
+            datasets: [{ data: Object.values(decades), backgroundColor: ['#CECECE', '#FFA500', '#FF6600', '#E1000F', '#8B0000'], borderRadius: 3 }]
+        },
+        options: chartOpts()
+    });
+
+    // Répartition par activité
+    const activities = {};
+    state.attacks.forEach(a => { activities[a.activity] = (activities[a.activity] || 0) + 1; });
+    if (state.charts.activity) state.charts.activity.destroy();
+    state.charts.activity = new Chart(document.getElementById('activityChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(activities),
+            datasets: [{ data: Object.values(activities), backgroundColor: ['#003366', '#E1000F', '#FFA500', '#18753C', '#666666'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
+
+    // Répartition horaire
+    const hours = { 'Matin (7-14h)': 0, 'Après-midi (14-17h)': 0, 'Crépuscule (17-20h)': 0, 'Nuit (20-7h)': 0 };
+    state.attacks.forEach(a => {
+        const h = a.hour;
+        if (h >= 7 && h < 14) hours['Matin (7-14h)']++;
+        else if (h >= 14 && h < 17) hours['Après-midi (14-17h)']++;
+        else if (h >= 17 && h < 20) hours['Crépuscule (17-20h)']++;
+        else hours['Nuit (20-7h)']++;
+    });
+    if (state.charts.hour) state.charts.hour.destroy();
+    state.charts.hour = new Chart(document.getElementById('hourChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(hours),
+            datasets: [{ data: Object.values(hours), backgroundColor: ['#18753C', '#FFA500', '#E1000F', '#003366'], borderRadius: 3 }]
+        },
+        options: chartOpts()
+    });
+
+    // Captures annuelles
+    if (state.charts.catch) state.charts.catch.destroy();
+    state.charts.catch = new Chart(document.getElementById('catchChart'), {
+        type: 'line',
+        data: {
+            labels: CATCH_YEARLY.labels,
+            datasets: [
+                { label: 'Tigres', data: CATCH_YEARLY.tigres, borderColor: '#003366', backgroundColor: 'rgba(0,51,102,0.1)', tension: 0.3, fill: true },
+                { label: 'Bouledogues', data: CATCH_YEARLY.bouledogues, borderColor: '#E1000F', backgroundColor: 'rgba(225,0,15,0.1)', tension: 0.3, fill: true }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+            scales: { y: { beginAtZero: true, grid: { color: '#EEEEEE' }, ticks: { color: '#666', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: '#666', font: { size: 10 } } } }
+        }
+    });
+
+    // Gravité
+    const sev = { 'Léger': 0, 'Grave': 0, 'Fatal': 0 };
+    state.attacks.forEach(a => { sev[a.severity] = (sev[a.severity] || 0) + 1; });
+    if (state.charts.severity) state.charts.severity.destroy();
+    state.charts.severity = new Chart(document.getElementById('severityChart'), {
+        type: 'bar',
+        data: { labels: Object.keys(sev), datasets: [{ data: Object.values(sev), backgroundColor: ['#18753C', '#FFA500', '#E1000F'], borderRadius: 3 }] },
+        options: chartOpts()
+    });
+
+    // Composition des captures
+    if (state.charts.species) state.charts.species.destroy();
+    state.charts.species = new Chart(document.getElementById('speciesChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Requin tigre', 'Requin bouledogue', 'Non ciblés'],
+            datasets: [{ data: [413, 135, 63], backgroundColor: ['#003366', '#E1000F', '#FFA500'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
+
+    // Espèces protégées
+    if (state.charts.protected) state.charts.protected.destroy();
+    state.charts.protected = new Chart(document.getElementById('protectedChart'), {
+        type: 'bar',
+        data: {
+            labels: PROTECTED_SPECIES.map(s => s.name.split(' (')[0]),
+            datasets: [{ data: PROTECTED_SPECIES.map(s => s.count), backgroundColor: ['#B300B3', '#FF6600', '#18753C'], borderRadius: 3 }]
+        },
+        options: { ...chartOpts(), indexAxis: 'y' }
+    });
+}
+
+function updateChartsForFilter(filtered) {
+    // Mise à jour du graphique de gravité en fonction du filtre
+    const sev = { 'Léger': 0, 'Grave': 0, 'Fatal': 0 };
+    filtered.forEach(a => { sev[a.severity] = (sev[a.severity] || 0) + 1; });
+    if (state.charts.severity) {
+        state.charts.severity.data.datasets[0].data = Object.values(sev);
+        state.charts.severity.update();
+    }
+
+    // Mise à jour du graphique d'activité
+    const activities = {};
+    filtered.forEach(a => { activities[a.activity] = (activities[a.activity] || 0) + 1; });
+    if (state.charts.activity) {
+        state.charts.activity.data.labels = Object.keys(activities);
+        state.charts.activity.data.datasets[0].data = Object.values(activities);
+        state.charts.activity.update();
+    }
+}
+
+function chartOpts() {
+    return {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, grid: { color: '#EEEEEE' }, ticks: { color: '#666', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: '#666', font: { size: 10 } } } }
+    };
+}
+
+/* ============================================================
+   TABLEAU ATTAQUES
+   ============================================================ */
+function renderAttacksTable(rows) {
+    state._renderedAttacks = rows;
+    const tbody = document.getElementById('attacksBody');
+    if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;">Aucune attaque trouvée</td></tr>';
+        document.getElementById('attackCount').textContent = '0 attaque';
+        return;
+    }
+    tbody.innerHTML = rows.map((a, i) => {
+        const tagClass = a.fatal ? 'fr-tag--fatal' : (a.severity === 'Grave' ? 'fr-tag--grave' : 'fr-tag--leger');
+        return `
+            <tr onclick="showAttackDetail(${i})">
+                <td>${a.dateObj.toLocaleDateString('fr-FR')}</td>
+                <td>${escapeHtml(a.place)}</td>
+                <td>${escapeHtml(a.activity)}</td>
+                <td><span class="fr-tag ${tagClass}">${escapeHtml(a.severity)}</span></td>
+                <td>${a.hour}h00</td>
+                <td><i class="fas fa-circle-info" style="color:var(--ocean);"></i></td>
+            </tr>
+        `;
+    }).join('');
+    document.getElementById('attackCount').textContent = rows.length + ' attaque' + (rows.length > 1 ? 's' : '');
+}
+
+function filterAttacks() {
+    const q = document.getElementById('attackSearch').value.trim().toLowerCase();
+    if (!q) return renderAttacksTable(state.filteredAttacks);
+    renderAttacksTable(state.filteredAttacks.filter(a =>
+        (a.place + ' ' + a.activity).toLowerCase().includes(q)
+    ));
+}
+
+function sortAttacks(col) {
+    const keys = ['dateObj', 'place', 'activity', 'severity', 'hour'];
+    const key = keys[col];
+    state.sortDir[col] = !state.sortDir[col];
+    const dir = state.sortDir[col] ? 1 : -1;
+    const sorted = [...state.filteredAttacks].sort((a, b) => {
+        const av = a[key], bv = b[key];
+        if (av instanceof Date && bv instanceof Date) return (av - bv) * dir;
+        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+        return String(av).localeCompare(String(bv)) * dir;
+    });
+    renderAttacksTable(sorted);
+}
+
+/* ============================================================
+   TABLEAU CAPTURES
+   ============================================================ */
+function renderCatchesTable() {
+    const tbody = document.getElementById('catchesBody');
+    tbody.innerHTML = CATCHES_DATA.map(c => `
+        <tr>
+            <td>${escapeHtml(c.species)}</td>
+            <td><span class="fr-tag ${c.status.includes('CR') || c.status.includes('VU') ? 'fr-tag--prot' : 'fr-tag--info'}">${escapeHtml(c.status)}</span></td>
+            <td><strong>${c.count}</strong></td>
+            <td>${escapeHtml(c.details)}</td>
+        </tr>
+    `).join('');
+}
+
+/* ============================================================
+   CARTE
+   ============================================================ */
+function initMap() {
+    state.map = L.map('map').setView([-21.115, 55.536], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 18
+    }).addTo(state.map);
+
+    state.layers.attacks = L.layerGroup().addTo(state.map);
+    state.layers.heat = L.layerGroup().addTo(state.map);
+    state.layers.equip = L.layerGroup().addTo(state.map);
+    state.layers.spots = L.layerGroup().addTo(state.map);
+    state.layers.zonage = L.layerGroup();
+
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function() {
+        const div = L.DomUtil.create('div', 'map-legend');
+        div.innerHTML = `
+            <div class="map-legend__title">Légende</div>
+            <div class="map-legend__item"><span class="map-legend__dot" style="background:#E1000F;"></span> Attaque fatale</div>
+            <div class="map-legend__item"><span class="map-legend__dot" style="background:#FFA500;"></span> Attaque grave</div>
+            <div class="map-legend__item"><span class="map-legend__dot" style="background:#18753C;"></span> Attaque légère</div>
+            <div class="map-legend__item"><span class="map-legend__dot" style="background:#003366;"></span> Spot de surf</div>
+            <div class="map-legend__item"><span class="map-legend__dot" style="background:#B300B3;"></span> Équipement de surveillance</div>
+            <div class="map-legend__item"><span class="map-legend__dot" style="background:#FFD700;"></span> ZONEX (zone d'expérimentation)</div>
+            <div class="map-legend__item"><span class="map-legend__dot" style="background:linear-gradient(90deg,#FFE5B4,#FF6600,#8B0000);"></span> Densité d'attaques</div>
+        `;
+        return div;
+    };
+    legend.addTo(state.map);
+
+    setTimeout(() => state.map.invalidateSize(), 300);
+}
+
+function toggleLayer(name) {
+    state.layersVisible[name] = !state.layersVisible[name];
+    const layer = state.layers[name];
+    if (state.layersVisible[name]) {
+        state.map.addLayer(layer);
+    } else {
+        state.map.removeLayer(layer);
+    }
+    const btnMap = { heat: 'btnHeat', equip: 'btnEquip', spots: 'btnSpots', zonage: 'btnZonage' };
+    const btn = document.getElementById(btnMap[name]);
+    if (btn) btn.style.opacity = state.layersVisible[name] ? '1' : '0.5';
+}
+
+function updateMapMarkers() {
+    if (!state.map) return;
+
+    // Attaques (avec filtre actif)
+    state.layers.attacks.clearLayers();
+    state.filteredAttacks.forEach(a => {
+        let color = '#18753C';
+        if (a.fatal) color = '#E1000F';
+        else if (a.severity === 'Grave') color = '#FFA500';
+
+        L.circleMarker([a.lat, a.lon], { radius: 6, color: color, fillColor: color, fillOpacity: 0.7, weight: 1 })
+        .bindPopup(`
+            <div class="attack-popup">
+                <div class="attack-popup__title" style="color:${color};">${a.fatal ? '⚠️' : '🦈'} Attaque — ${escapeHtml(a.place)}</div>
+                <div class="attack-popup__row"><strong>Date :</strong><span>${a.dateObj.toLocaleDateString('fr-FR')}</span></div>
+                <div class="attack-popup__row"><strong>Heure :</strong><span>${a.hour}h00</span></div>
+                <div class="attack-popup__row"><strong>Activité :</strong><span>${escapeHtml(a.activity)}</span></div>
+                <div class="attack-popup__row"><strong>Gravité :</strong><span>${escapeHtml(a.severity)}</span></div>
+            </div>
+        `).addTo(state.layers.attacks);
+    });
+
+    // Heatmap (avec filtre actif)
+    state.layers.heat.clearLayers();
+    const heatData = state.filteredAttacks.map(a => [a.lat, a.lon, a.fatal ? 1.0 : (a.severity === 'Grave' ? 0.7 : 0.4)]);
+    if (typeof L.heatLayer === 'function') {
+        state.layers.heat.addLayer(L.heatLayer(heatData, {
+            radius: 25, blur: 20, maxZoom: 12,
+            gradient: { 0.2: '#FFE5B4', 0.5: '#FF6600', 0.8: '#E1000F', 1.0: '#8B0000' }
+        }));
+    }
+
+    // Équipements
+    state.layers.equip.clearLayers();
+    EQUIPMENTS.forEach(e => {
+        const color = e.status === 'Opérationnel' ? '#B300B3' : (e.status === 'Étude' ? '#FF6600' : '#0066CC');
+        L.circleMarker([e.lat, e.lon], { radius: 5, color: color, fillColor: color, fillOpacity: 0.7, weight: 2, dashArray: e.status === 'Étude' ? '4,4' : null })
+        .bindPopup(`<strong style="color:${color};">${escapeHtml(e.type)}</strong><br>${escapeHtml(e.name)}<br><em>${escapeHtml(e.status)}</em>`)
+        .addTo(state.layers.equip);
+    });
+
+    // Spots
+    state.layers.spots.clearLayers();
+    SPOTS.forEach(s => {
+        L.circleMarker([s.lat, s.lon], { radius: 5, color: '#003366', fillColor: '#003366', fillOpacity: 0.3, weight: 1 })
+        .bindPopup(`<strong>${escapeHtml(s.name)}</strong><br>Risque : ${escapeHtml(s.risk)}`)
+        .addTo(state.layers.spots);
+    });
+
+    // ZONEX
+    state.layers.zonage.clearLayers();
+    ZONEX.forEach(z => {
+        L.circle([z.lat, z.lon], { radius: z.radius, color: '#FFD700', fillColor: '#FFD700', fillOpacity: 0.15, weight: 2, dashArray: '5,5' })
+        .bindPopup(`<strong style="color:#8B5A00;">${escapeHtml(z.name)}</strong><br>Statut : ${escapeHtml(z.status)}<br>Rayon : ${z.radius} m`)
+        .addTo(state.layers.zonage);
+    });
+
+    document.getElementById('mapCounts').textContent = `${state.filteredAttacks.length} attaques · ${EQUIPMENTS.length} équipements · ${SPOTS.length} spots · ${ZONEX.length} ZONEX`;
+}
+
+/* ============================================================
+   MODALES
+   ============================================================ */
+function showAttackDetail(i) {
+    const a = state._renderedAttacks[i];
+    if (!a) return;
+    const color = a.fatal ? '#E1000F' : (a.severity === 'Grave' ? '#FFA500' : '#18753C');
+    document.getElementById('modalTitle').textContent = (a.fatal ? '⚠️ ' : '🦈 ') + a.place;
+    document.getElementById('modalBody').innerHTML = `
+        <div style="border-left:4px solid ${color}; padding-left:12px; margin-bottom:16px;">
+            <div style="font-size:1.2rem; font-weight:700; color:${color};">${escapeHtml(a.severity)}</div>
+            <div style="font-size:0.9rem; color:var(--text-mention);">${escapeHtml(a.place)}</div>
+        </div>
+        <table class="fr-table"><tbody>
+            <tr><td><strong>Date</strong></td><td>${a.dateObj.toLocaleDateString('fr-FR')}</td></tr>
+            <tr><td><strong>Heure approximative</strong></td><td>${a.hour}h00</td></tr>
+            <tr><td><strong>Lieu</strong></td><td>${escapeHtml(a.place)}</td></tr>
+            <tr><td><strong>Activité</strong></td><td>${escapeHtml(a.activity)}</td></tr>
+            <tr><td><strong>Gravité</strong></td><td><span class="fr-tag ${a.fatal ? 'fr-tag--fatal' : 'fr-tag--leger'}">${escapeHtml(a.severity)}</span></td></tr>
+            <tr><td><strong>Issue</strong></td><td>${a.fatal ? '🔴 Fatal' : '🟢 Non fatal'}</td></tr>
+            <tr><td><strong>Coordonnées</strong></td><td>${a.lat.toFixed(3)}°, ${a.lon.toFixed(3)}°</td></tr>
+        </tbody></table>
+    `;
+    document.getElementById('detailModal').classList.add('active');
+}
+
+function showAbout() {
+    document.getElementById('modalTitle').textContent = 'À propos';
+    document.getElementById('modalBody').innerHTML = `
+        <p><strong>Vigie Requins — La Réunion</strong> est un outil tiers <strong>indépendant</strong>,
+        non édité, non approuvé et non affilié au Centre Sécurité Requin (CSR), à l'État français
+        ou à l'association Ressac.</p>
+        <p style="margin-top:0.75rem;">Il compile uniquement des <strong>données publiques</strong> :</p>
+        <ul style="margin:0.75rem 0 0 1.25rem;">
+            <li>Publications académiques (46 attaques documentées 1980–2014)</li>
+            <li>Rapports du Centre Sécurité Requin (48 attaques 1980–2021, captures 2014–2023)</li>
+            <li>Programme Réunionnais de Pêche de Prévention (PR2P)</li>
+            <li>Projet CHARC (marquage acoustique, IRD)</li>
+            <li>Projet ReMaCAP (caméras BRUVS, Shark Citizen)</li>
+            <li>Données IUCN 2024 sur les captures</li>
+            <li>Signalements collaboratifs publics (Dorsal)</li>
+        </ul>
+        <p style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-mention);">
+            Zone couverte : île de La Réunion (côte ouest principalement).<br>
+            Les données temps réel officielles (vigies, drones, BSAN) ne sont pas accessibles
+            sans convention avec le CSR ou Ressac.<br>
+            Code source : MIT © 2026.
+        </p>`;
+    document.getElementById('detailModal').classList.add('active');
+}
+
+function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
+document.getElementById('detailModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
+function exportCSV() {
+    const headers = ['Date', 'Lieu', 'Latitude', 'Longitude', 'Heure', 'Activité', 'Gravité', 'Fatal'];
+    const rows = state.attacks.map(a => [
+        a.dateObj.toISOString().slice(0, 10), a.place, a.lat.toFixed(4), a.lon.toFixed(4),
+        a.hour, a.activity, a.severity, a.fatal ? 'OUI' : 'NON'
+    ]);
+    const escape = (v) => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const lines = [
+        '# VIGIE REQUINS — LA RÉUNION — ' + new Date().toLocaleString('fr-FR'),
+        '# Outil tiers non gouvernemental — données publiques CSR / académiques',
+        '',
+        '## ATTAQUES (' + state.attacks.length + ')',
+        headers.join(','),
+        ...rows.map(r => r.map(escape).join(',')),
+        '',
+        '## CAPTURES PRÉVENTIVES (2014–2023)',
+        'Espèce,Statut,Nombre,Détails',
+        ...CATCHES_DATA.map(c => [c.species, c.status, c.count, c.details].map(escape).join(',')),
+        '',
+        '## ESPÈCES PROTÉGÉES IMPACTÉES',
+        'Espèce,Statut UICN',
+        ...PROTECTED_SPECIES.map(s => [s.name, s.status].map(escape).join(','))
+    ];
+    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vigie_requins_reunion_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   EXPORT PDF
+   ============================================================ */
+const nf = n => n.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ');
+
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const now = new Date();
+
+    doc.setFillColor(0, 51, 102);
+    doc.rect(0, 0, 210, 25, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VIGIE REQUINS — LA RÉUNION', 14, 12);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Outil tiers non gouvernemental — Données publiques CSR / académiques', 14, 19);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.text('Généré le : ' + now.toLocaleString('fr-FR'), 14, 33);
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RÉSUMÉ', 14, 43);
+    const fatal = state.attacks.filter(a => a.fatal).length;
+    const summary = [
+        ['Attaques documentées', state.attacks.length],
+        ['Attaques fatales', fatal],
+        ['Taux de mortalité', Math.round((fatal / state.attacks.length) * 100) + ' %'],
+        ['Captures ciblées (2014–2023)', 548],
+        ['Années sans attaque', '7 (depuis 2019)'],
+        ['Taux capture ciblée', '32 %'],
+        ['Survie captures non ciblées', '90,2 %']
+    ];
+    let y = 50;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    summary.forEach(([label, val]) => {
+        doc.text(label + ' :', 14, y);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(val), 100, y);
+        doc.setFont('helvetica', 'normal');
+        y += 6;
+    });
+
+    y += 6;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ATTAQUES RÉCENTES (extrait de 20)', 14, y);
+    y += 4;
+    doc.autoTable({
+        startY: y,
+        head: [['Date', 'Lieu', 'Activité', 'Gravité', 'Heure']],
+        body: state.attacks.slice(0, 20).map(a => [a.dateObj.toLocaleDateString('fr-FR'), a.place, a.activity, a.severity, a.hour + 'h']),
+        theme: 'striped', headStyles: { fillColor: [0, 51, 102] }, styles: { fontSize: 8 }, margin: { left: 14, right: 14 }
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+    if (y > 235) { doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CAPTURES PRÉVENTIVES (2014–2023)', 14, y);
+    y += 4;
+    doc.autoTable({
+        startY: y,
+        head: [['Espèce', 'Statut', 'Nombre']],
+        body: CATCHES_DATA.map(c => [c.species, c.status, c.count]),
+        theme: 'striped', headStyles: { fillColor: [225, 0, 15] }, styles: { fontSize: 8 }, margin: { left: 14, right: 14 }
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+    if (y > 235) { doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ESPÈCES PROTÉGÉES IMPACTÉES', 14, y);
+    y += 4;
+    doc.autoTable({
+        startY: y,
+        head: [['Espèce', 'Statut UICN']],
+        body: PROTECTED_SPECIES.map(s => [s.name, s.status]),
+        theme: 'striped', headStyles: { fillColor: [179, 0, 179] }, styles: { fontSize: 8 }, margin: { left: 14, right: 14 }
+    });
+
+    const pages = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= pages; p++) {
+        doc.setPage(p);
+        doc.setFontSize(8);
+        doc.setTextColor(120);
+        doc.text('Outil tiers indépendant — données publiques — © 2026 MIT', 14, 290);
+        doc.text('Page ' + p + '/' + pages, 196, 290, { align: 'right' });
+    }
+
+    doc.save(`vigie_requins_reunion_${now.toISOString().slice(0, 19).replace(/[:T]/g, '-')}.pdf`);
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+document.querySelectorAll('.fr-nav__link').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.fr-nav__link').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const targets = { overview: null, map: 'mapAnchor', attacks: 'attacksAnchor', catches: 'catchesAnchor', tech: 'techAnchor', transparency: 'transparencyAnchor' };
+        const id = targets[btn.dataset.tab];
+        if (id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
+
+/* ============================================================
+   UTILITAIRES
+   ============================================================ */
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>
