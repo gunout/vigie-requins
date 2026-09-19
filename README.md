@@ -9,15 +9,14 @@
 [![Leaflet](https://img.shields.io/badge/Leaflet-1.9.4-199900?logo=leaflet&logoColor=white)](https://leafletjs.com/)
 [![Chart.js](https://img.shields.io/badge/Chart.js-4.4.1-FF6384?logo=chart.js&logoColor=white)](https://www.chartjs.org/)
 
----
-## SCREENSHOTS 
-
+**🔗 Démo en ligne :** [https://gunout.github.io/vigie-requins/](https://gunout.github.io/vigie-requins/)
 
 ---
 
 ## 📋 Table des matières
 
 - [Présentation](#-présentation)
+- [Démo](#-démo)
 - [Fonctionnalités](#-fonctionnalités)
 - [Aperçu des modules](#-aperçu-des-modules)
 - [Sources de données](#-sources-de-données)
@@ -55,6 +54,14 @@ Ce projet **ne remplace pas** les dispositifs officiels de surveillance (CSR, BS
 - ❌ Accéder aux flux des vigies, drones ou BSAN
 - ❌ Remplacer l'application Dorsal ou les communications du CSR
 - ❌ Constituer un avis médical, juridique ou de sécurité
+
+---
+
+## 🎬 Démo
+
+**Application en ligne :** [https://gunout.github.io/vigie-requins/](https://gunout.github.io/vigie-requins/)
+
+Ouvrez simplement le lien dans un navigateur moderne. Aucune installation, aucun serveur, aucune dépendance à installer.
 
 ---
 
@@ -118,6 +125,7 @@ Ce projet **ne remplace pas** les dispositifs officiels de surveillance (CSR, BS
 - Espèces protégées capturées accidentellement
 - Controverse sur la publication des données (contentieux 2026)
 - Débat scientifique sur l'efficacité des PAVAC
+- Baisse de fréquentation des bouledogues (facteur 4 entre 2014 et 2019)
 
 ### 📤 Export
 
@@ -166,7 +174,7 @@ Toutes les données utilisées sont **publiques** et proviennent des sources sui
 
 ### Signalements collaboratifs
 
-- **Dorsal** — application officielle du CSR (250 000+ utilisateurs)
+- **Dorsal** — application officielle du CSR (250 000+ utilisateurs) — [https://dorsalwatch.com](https://dorsalwatch.com)
 
 ### Zonage réglementaire
 
@@ -204,6 +212,8 @@ npx serve
 2. Poussez le fichier `index.html`
 3. Activez GitHub Pages dans **Settings → Pages**
 4. Le site sera disponible à `https://<votre-utilisateur>.github.io/<votre-depot>/`
+
+**Exemple en production :** [https://gunout.github.io/vigie-requins/](https://gunout.github.io/vigie-requins/)
 
 ---
 
@@ -266,7 +276,7 @@ Le projet est volontairement **mono-fichier** pour faciliter le déploiement et 
 ### Avertissements
 
 > **Cet outil ne fournit pas d'alertes en temps réel à valeur réglementaire.**
-> Pour toute décision de baignade ou d'activité nautique, consultez les **autorités locales** et l'application **Dorsal**.
+> Pour toute décision de baignade ou d'activité nautique, consultez les **autorités locales** et l'application **Dorsal** ([https://dorsalwatch.com](https://dorsalwatch.com)).
 
 > **Cet outil n'est pas affilié au CSR, à l'État français ou à Ressac.**
 > Il s'agit d'un projet tiers indépendant à vocation informative et éducative.
@@ -369,14 +379,14 @@ SOFTWARE.
 - **IRD / MARBEC** — pour les programmes CHARC et les études acoustiques
 - **Shark Citizen / OFB** — pour le projet ReMaCAP
 - **IUCN** — pour les données 2024 sur les captures
-- **Dorsal** — pour la plateforme collaborative de signalement
+- **Dorsal** — pour la plateforme collaborative de signalement — [https://dorsalwatch.com](https://dorsalwatch.com)
 
 ### Bibliothèques open source
 
-- **Leaflet** — cartographie interactive
-- **Chart.js** — visualisation de données
-- **jsPDF** — génération de PDF
-- **Font Awesome** — icônes
+- **Leaflet** — cartographie interactive — [https://leafletjs.com](https://leafletjs.com)
+- **Chart.js** — visualisation de données — [https://www.chartjs.org](https://www.chartjs.org)
+- **jsPDF** — génération de PDF — [https://github.com/parallax/jsPDF](https://github.com/parallax/jsPDF)
+- **Font Awesome** — icônes — [https://fontawesome.com](https://fontawesome.com)
 
 ### Communauté
 
@@ -386,11 +396,23 @@ SOFTWARE.
 
 ---
 
+## 📞 Contact
+
+Pour toute question, suggestion ou partenariat :
+
+- **Issues GitHub** : [ouvrir une issue](https://github.com/gunout/vigie-requins/issues)
+- **Dépôt GitHub** : [https://github.com/gunout/vigie-requins](https://github.com/gunout/vigie-requins)
+- **Démo en ligne** : [https://gunout.github.io/vigie-requins/](https://gunout.github.io/vigie-requins/)
+
+---
+
 <div align="center">
 
 **🦈 Vigie Requins — La Réunion**
 
 *Outil tiers indépendant — non gouvernemental*
+
+[🔗 Démo en ligne](https://gunout.github.io/vigie-requins/) · [📦 Dépôt GitHub](https://github.com/gunout/vigie-requins)
 
 [⬆ Retour en haut](#-vigie-requins--la-réunion)
 
